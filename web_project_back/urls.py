@@ -21,6 +21,6 @@ from webproject_back import views, urls
 urlpatterns = [
     path('admin/register-users', views.register_users),
     path('admin/list-users', views.list_users),
-    # path('api-auth/', include('rest_framework.urls')),
-    # path('todos/', include(urls)),
+    path('admin/register-item', views.register_item),
+    path('admin/list-itens', views.list_itens)
 ]

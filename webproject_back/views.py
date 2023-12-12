@@ -7,8 +7,8 @@ from rest_framework.status import (
     HTTP_400_BAD_REQUEST
 )
 from rest_framework import permissions
-from .models import Usuarios, EstoqueItem
-from .serializers import UsuariosSerializer, EstoqueItemSerializer
+from .models import Usuarios, EstoqueItem, ItensUsuario
+from .serializers import UsuariosSerializer, EstoqueItemSerializer, ItensUsuarioSerializer
 
 from rest_framework.decorators import api_view
 
@@ -47,7 +47,7 @@ def register_users(request):
 
 @api_view(["GET"])
 def list_users(request):
-    # try:
+    try:
 
         users = Usuarios.objects.all()
 
@@ -61,13 +61,13 @@ def list_users(request):
             }, status=HTTP_200_OK
         )
 
-    # except:
-    #     return Response(
-    #         {
-    #             "status": "Error",
-    #             "message": "Erro ao listar usuários"
-    #         }, status=HTTP_500_INTERNAL_SERVER_ERROR
-    #     )
+    except:
+        return Response(
+            {
+                "status": "Error",
+                "message": "Erro ao listar usuários"
+            }, status=HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 @api_view(["POST"])
 def login(request):
@@ -154,5 +154,60 @@ def list_itens(request):
             {
                 "status": "Error",
                 "message": "Erro ao registrar usuário"
+            }, status=HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(["POST"])
+def register_user_item(request):
+    try:
+        
+        params = request.data
+
+        new_item = ItensUsuario(
+            item_estoque_id=params["itemId"],
+            usuario_id=params["user"],
+            quantidade=params["itemAmount"]
+        )
+
+        new_item.save()
+
+        return Response(
+            {
+                "status": "Success",
+                "message": "Item registrado ao usuário com sucesso!"
+            }, status=HTTP_200_OK
+        )
+
+    except:
+        return Response(
+            {
+                "status": "Error",
+                "message": "Erro ao registrar item ao usuário"
+            }, status=HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+@api_view(["GET"])
+def list_user_itens(request):
+    try:
+        
+        params = request.query_params
+
+        itens = ItensUsuario.objects.filter(usuario_id=params["user"])
+
+        serializer = ItensUsuarioSerializer(itens, many=True)
+
+        return Response(
+            {
+                "status": "Success",
+                "message": "Itens do usuário listados com sucesso!",
+                "itens": serializer.data
+            }, status=HTTP_200_OK
+        )
+
+    except:
+        return Response(
+            {
+                "status": "Error",
+                "message": "Erro ao listar itens do usuário"
             }, status=HTTP_500_INTERNAL_SERVER_ERROR
         )

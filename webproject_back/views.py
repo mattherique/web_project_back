@@ -193,7 +193,6 @@ def list_user_itens(request):
         params = request.query_params
 
         itens = ItensUsuario.objects.filter(usuario_id=params["user"])
-
         serializer = ItensUsuarioSerializer(itens, many=True)
 
         return Response(

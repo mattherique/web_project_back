@@ -9,6 +9,8 @@ class UsuariosSerializer(serializers.ModelSerializer):
 
 class EstoqueItemSerializer(serializers.ModelSerializer):
 
+    quantidade = serializers.ReadOnlyField(source="get_amount")
+
     class Meta:
         model = EstoqueItem
         fields = "__all__"

@@ -192,7 +192,11 @@ def list_user_itens(request):
         
         params = request.query_params
 
-        itens = ItensUsuario.objects.filter(usuario_id=params["user"])
+        if "fist_date" in params or "last_date" in params:
+            itens = ItensUsuario.objects.filter(usuario_id=params["user"], data_entrega__gte=params["first_date"], data_entrega__lte=params["last_date"])
+        else:
+            itens = ItensUsuario.objects.filter(usuario_id=params["user"])
+
         serializer = ItensUsuarioSerializer(itens, many=True)
 
         return Response(

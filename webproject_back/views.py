@@ -218,26 +218,24 @@ def list_user_itens(request):
 def remove_leading_zeros(value):
     # Remove leading zeros from the value
     if type(value) == type('a'):
-        return value.lstrip('0')
+        return str(value.lstrip('0'))
 
-    return 0
+    return '0'
     
 @api_view(["POST"])
 def generate_excel(request):
 
-    # try:
-        print(request.FILES["base_warning"])
-        print(request.FILES["client"])
+    try:
         import pandas as pd
         import io
         from django.http import HttpResponse
 
        # Load data from uploaded files
-        df1 = pd.read_excel(request.FILES["client"])
-        df2 = pd.read_excel(request.FILES["base_warning"])
-        # df2['Código do Cliente SA'] = df2['Código do Cliente SA'].apply(remove_leading_zeros)
-        # print(df1['CódigoCliente SAP Recebedor'])
-        # print(etste)
+        df1 = pd.read_excel(request.FILES["client"], dtype={'Cod Cliente RM': str})
+        df2 = pd.read_excel(request.FILES["base_warning"], dtype={'Código do Cliente SAP': str})
+        
+        df2['Código do Cliente SAP'] = df2['Código do Cliente SAP'].apply(remove_leading_zeros)
+        
         # Create separate dataframes based on 'Alerta' column
         dfs = {}    
         for alerta, group in df1.groupby('Alerta'):
@@ -256,8 +254,20 @@ def generate_excel(request):
         for alerta, df_merged in merged_dfs.items():
             sheet_name = f'{alerta}'  # Name sheet based on alerta value
             # Select desired columns
-            df_final = df_merged[['Fabricante', 'Código Equipamento Telemetria', 'CódigoCliente SAP Recebedor', 'Razão Social / Nome do cliente', 'Nome Fantasia / Apelido *', 'Rua de entrega', 'Cidade de entrega', 'Bairro de Entrega', 'UF *', 'DDD e Telefone', 'Proprietário da conta', 'Email Proprietário']]
+            df_final = df_merged[['Fabricante', 'Código Equipamento Telemetria','Código do Cliente SAP', 'CódigoCliente SAP Recebedor', 'Razão Social / Nome do cliente', 'Nome Fantasia / Apelido *', 'Rua de entrega', 'Cidade de entrega', 'Bairro de Entrega', 'UF *', 'DDD e Telefone', 'Proprietário da conta', 'Email Proprietário']]
             df_final.to_excel(writer, sheet_name=sheet_name, index=False)
+
+            workbook  = writer.book
+            worksheet = writer.sheets[sheet_name]
+
+            number_format = workbook.add_format({'align': 'center', 'bold': True})
+            worksheet.set_column('B:B', 25, number_format)
+
+            for i, col in enumerate(df_final.columns):
+                # Find the maximum length of the column content
+                column_len = max(df_final[col].astype(str).map(len).max(), len(col))
+                # Set the column width based on the maximum length
+                worksheet.set_column(i, i, column_len)
 
         writer.close()  # Close the writer to release resources
 
@@ -269,10 +279,10 @@ def generate_excel(request):
 
         return response
 
-    # except:
-    #     return Response(
-    #         {
-    #             "status": "Error",
-    #             "message": "Erro ao gerar excel"
-    #         }, status=HTTP_500_INTERNAL_SERVER_ERROR
-    #     )
+    except:
+        return Response(
+            {
+                "status": "Error",
+                "message": "Erro ao gerar excel"
+            }, status=HTTP_500_INTERNAL_SERVER_ERROR
+        )

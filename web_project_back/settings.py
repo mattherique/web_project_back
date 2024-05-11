@@ -29,24 +29,28 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '127.0.0.1:8000',
     'http://localhost:3000',
-    'localhost:3000'
+    'localhost:3000',
+    'localhost:5173'
 ]
 
 CORS_ORIGIN_WHITELIST = (
     'https://cheersshop.com.br',
     'http://cheersshop.com.br',
     'http://produto-env.fpvtbmufwy.sa-east-1.elasticbeanstalk.com',
-    'https://produto-env.fpvtbmufwy.sa-east-1.elasticbeanstalk.com'
+    'https://produto-env.fpvtbmufwy.sa-east-1.elasticbeanstalk.com',
+    'http://localhost:5173'
 )
 
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'http://localhost:5173'
 ]
 
 CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'http://localhost:5173'
 ]
 
 

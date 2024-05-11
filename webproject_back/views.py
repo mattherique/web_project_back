@@ -214,3 +214,65 @@ def list_user_itens(request):
                 "message": "Erro ao listar itens do usuário"
             }, status=HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+def remove_leading_zeros(value):
+    # Remove leading zeros from the value
+    if type(value) == type('a'):
+        return value.lstrip('0')
+
+    return 0
+    
+@api_view(["POST"])
+def generate_excel(request):
+
+    # try:
+        print(request.FILES["base_warning"])
+        print(request.FILES["client"])
+        import pandas as pd
+        import io
+        from django.http import HttpResponse
+
+       # Load data from uploaded files
+        df1 = pd.read_excel(request.FILES["client"])
+        df2 = pd.read_excel(request.FILES["base_warning"])
+        # df2['Código do Cliente SA'] = df2['Código do Cliente SA'].apply(remove_leading_zeros)
+        # print(df1['CódigoCliente SAP Recebedor'])
+        # print(etste)
+        # Create separate dataframes based on 'Alerta' column
+        dfs = {}    
+        for alerta, group in df1.groupby('Alerta'):
+            dfs[alerta] = group
+
+        # Merge each separate dataframe with the second dataframe
+        merged_dfs = {}
+        for alerta, df in dfs.items():
+            merged_dfs[alerta] = pd.merge(df, df2, left_on='Cod Cliente RM', right_on='Código do Cliente SAP', how='inner')
+
+        # Create Excel writer object
+        output = io.BytesIO()
+        writer = pd.ExcelWriter(output, engine='xlsxwriter')
+
+        # Write each merged dataframe to a separate sheet
+        for alerta, df_merged in merged_dfs.items():
+            sheet_name = f'{alerta}'  # Name sheet based on alerta value
+            # Select desired columns
+            df_final = df_merged[['Fabricante', 'Código Equipamento Telemetria', 'CódigoCliente SAP Recebedor', 'Razão Social / Nome do cliente', 'Nome Fantasia / Apelido *', 'Rua de entrega', 'Cidade de entrega', 'Bairro de Entrega', 'UF *', 'DDD e Telefone', 'Proprietário da conta', 'Email Proprietário']]
+            df_final.to_excel(writer, sheet_name=sheet_name, index=False)
+
+        writer.close()  # Close the writer to release resources
+
+        # Create HTTP response
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=nova_planilha.xlsx'
+        output.seek(0)
+        response.write(output.getvalue())
+
+        return response
+
+    # except:
+    #     return Response(
+    #         {
+    #             "status": "Error",
+    #             "message": "Erro ao gerar excel"
+    #         }, status=HTTP_500_INTERNAL_SERVER_ERROR
+    #     )

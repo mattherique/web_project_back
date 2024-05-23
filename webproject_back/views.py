@@ -255,6 +255,7 @@ def generate_excel(request):
             sheet_name = f'{alerta}'  # Name sheet based on alerta value
             # Select desired columns
             df_final = df_merged[['Fabricante', 'Código Equipamento Telemetria','Código do Cliente SAP', 'CódigoCliente SAP Recebedor', 'Razão Social / Nome do cliente', 'Nome Fantasia / Apelido *', 'Rua de entrega', 'Cidade de entrega', 'Bairro de Entrega', 'UF *', 'DDD e Telefone', 'Proprietário da conta', 'Email Proprietário']]
+            
             df_final.to_excel(writer, sheet_name=sheet_name, index=False)
 
             workbook  = writer.book
